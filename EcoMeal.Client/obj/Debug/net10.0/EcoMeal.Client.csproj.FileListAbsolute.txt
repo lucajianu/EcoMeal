@@ -83,3 +83,4 @@
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/EcoMeal.Client.pdb
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/EcoMeal.Client.genruntimeconfig.cache
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/ref/EcoMeal.Client.dll
+/Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/EcoMeal.Client.sourcelink.json
