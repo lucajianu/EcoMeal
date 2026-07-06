@@ -1,9 +1,10 @@
 namespace EcoMeal.Backend.Entities;
-
+ 
 public class User
 {
     public int Id {get;set;}
     public required  string   Name{get;set;}
     public  required string  Contact{get;set;}
+    public ICollection<Order> Orders=new List<Order>();
 
 }
