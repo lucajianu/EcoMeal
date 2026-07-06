@@ -9,16 +9,19 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<EcoMealDbContext>(
     options=>options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+builder.Services.AddControllers();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options=> 
+    options.SwaggerEndpoint("/openapi/v1.json","EcoMeal API"));
 }
-
 app.UseHttpsRedirection();
-
+app.MapControllers();
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
