@@ -23,7 +23,6 @@
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/scopedcss/Components/Layout/ReconnectModal.razor.rz.scp.css
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/scopedcss/bundle/EcoMeal.Client.styles.css
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/scopedcss/projectbundle/EcoMeal.Client.bundle.scp.css
-/Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/compressed/kq83wxmmjl-{0}-khy4lop6wu-khy4lop6wu.gz
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/compressed/iy4nf9fvoz-{0}-bqjiyaj88i-bqjiyaj88i.gz
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/compressed/2jktbr5so3-{0}-c2jlpeoesf-c2jlpeoesf.gz
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/compressed/g1f5skn470-{0}-erw9l3u2r3-erw9l3u2r3.gz
@@ -71,8 +70,6 @@
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/compressed/cxkfjy1kiu-{0}-abdmv1u4y3-abdmv1u4y3.gz
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/compressed/8r9k0aupxs-{0}-qcnkhbt5lj-qcnkhbt5lj.gz
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/compressed/woiea6v4gh-{0}-12rnbzdyyc-12rnbzdyyc.gz
-/Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/compressed/jxyms678h9-{0}-lc9q5gzm87-lc9q5gzm87.gz
-/Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/compressed/v97w0hun2j-{0}-lc9q5gzm87-lc9q5gzm87.gz
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/staticwebassets.build.json
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/staticwebassets.build.json.cache
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/staticwebassets.development.json
@@ -84,3 +81,6 @@
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/EcoMeal.Client.genruntimeconfig.cache
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/ref/EcoMeal.Client.dll
 /Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/EcoMeal.Client.sourcelink.json
+/Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/compressed/jxyms678h9-{0}-uhcpz40wae-uhcpz40wae.gz
+/Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/compressed/v97w0hun2j-{0}-uhcpz40wae-uhcpz40wae.gz
+/Users/lucajianu1205/PracticaNETROM/EcoMeal/EcoMeal.Client/obj/Debug/net10.0/compressed/kq83wxmmjl-{0}-5rnobl38n9-5rnobl38n9.gz

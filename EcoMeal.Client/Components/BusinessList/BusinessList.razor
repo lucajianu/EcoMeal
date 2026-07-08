@@ -1,14 +1,55 @@
 @namespace EcoMeal.Site.Components.BusinessList
 @using EcoMeal.Site.Components.BusinessCard
 @using EcoMeal.Site.Models
-@if(Businesses is null){
- <p> Loading...</p>
+
+@if (Businesses is null)
+{
+    <div class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
 }
-else {
-    @foreach(  BusinessModel business  in Businesses)
+else
+{
+    <div class="mb-3">
+        <input class="form-control search-input"
+               placeholder="Search businesses..."
+               @bind="SearchTerm" @bind:event="oninput" />
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <button class="chip @(SelectedType is null ? "chip-active" : null)"
+                @onclick="() => SelectedType = null">
+            All
+        </button>
+        @foreach (string type in Types)
+        {
+            <button class="chip @(SelectedType == type ? "chip-active" : null)"
+                    @onclick="() => SelectedType = type">
+                @type
+            </button>
+        }
+    </div>
+
+    @if (!Filtered.Any())
     {
-        <div class="col-3">
-            <BusinessCard Business="business"/>
+        <div class="text-center text-secondary py-5">
+            <p class="fs-5 mb-1">No businesses found</p>
+            <p class="small mb-0">Try a different search or category.</p>
+        </div>
+    }
+    else
+    {
+        <p class="text-secondary small mb-3">@Filtered.Count() @(Filtered.Count() == 1 ? "place" : "places")</p>
+
+        <div class="row g-4">
+            @foreach (BusinessModel business in Filtered)
+            {
+                <div class="col-12 col-md-6 col-lg-4 col-xxl-3">
+                    <BusinessCard Business="business" OnDelete="DeleteBusiness" />
+                </div>
+            }
         </div>
     }
 }

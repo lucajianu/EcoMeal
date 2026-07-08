@@ -18,7 +18,7 @@ public class BusinessService// in sine este doar DTO-ul din backend
     }
     public async Task<bool> DeleteAsync(int id)
     {
-        var response=await _http.DeleteAsync($"api/business/{id}");//punem dolarul
-        return response.IsSuccessStatusCode;///204 succes altfel eroare
+        var response = await _http.DeleteAsync($"api/business/{id}");
+        return response.IsSuccessStatusCode;
     }
 }

@@ -1,5 +1,5 @@
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 a, .btn-link {
@@ -57,4 +57,119 @@ h1:focus {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+body {
+    background-color: #f8faf7;
+}
+
+.ecomeal-hero {
+    background:
+        linear-gradient(135deg, rgba(25, 135, 84, 0.12), rgba(255, 193, 7, 0.12)),
+        #ffffff;
+    border-radius: 0 0 2rem 2rem;
+}
+
+.business-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.business-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.10) !important;
+}
+
+.card-img-placeholder {
+    height: 110px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-img-placeholder .monogram {
+    font-size: 3rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+    user-select: none;
+}
+
+.type-badge {
+    position: absolute;
+    bottom: 0.6rem;
+    left: 0.75rem;
+    background: rgba(255, 255, 255, 0.93);
+    color: #1b4332;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.35em 0.75em;
+    border-radius: 999px;
+}
+
+.accent-0 { background: linear-gradient(135deg, #198754, #7dcfa2); }
+.accent-1 { background: linear-gradient(135deg, #e8590c, #ffa94d); }
+.accent-2 { background: linear-gradient(135deg, #c92a2a, #ff8787); }
+.accent-3 { background: linear-gradient(135deg, #1971c2, #74c0fc); }
+.accent-4 { background: linear-gradient(135deg, #6741d9, #b197fc); }
+
+.card-delete-btn {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: #c92a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.business-card:hover .card-delete-btn {
+    opacity: 1;
+}
+
+.card-delete-btn:hover {
+    background: #fff;
+    transform: scale(1.1);
+}
+
+.search-input {
+    max-width: 420px;
+    border-radius: 999px;
+    padding: 0.6rem 1.25rem;
+    border: 1px solid #dee2e6;
+}
+
+.search-input:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+}
+
+.chip {
+    border: 1px solid #dee2e6;
+    background: #fff;
+    border-radius: 999px;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #212529;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.chip:hover {
+    background: #f1f3f5;
+}
+
+.chip-active {
+    background: #1b4332;
+    border-color: #1b4332;
+    color: #fff;
+}
+
+.chip-active:hover {
+    background: #1b4332;
 }
