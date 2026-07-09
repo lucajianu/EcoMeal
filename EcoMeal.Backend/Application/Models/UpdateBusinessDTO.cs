@@ -1,12 +1,10 @@
 namespace EcoMeal.Backend.Models;
 
-public class BusinessDetailsDTO
+public class UpdateBusinessDTO
 {
-    public int Id { get; set; }
     public required string Name { get; set; }
     public required string Address { get; set; }
     public string? Description { get; set; }
     public required string Contact { get; set; }
-    public required string BusinessTypeName { get; set; }
-    public List<PackageDTO> Packages { get; set; } = new();
+    public int BusinessTypeId { get; set; }
 }

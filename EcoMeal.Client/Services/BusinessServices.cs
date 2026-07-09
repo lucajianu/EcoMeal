@@ -21,4 +21,13 @@ public class BusinessService// in sine este doar DTO-ul din backend
         var response = await _http.DeleteAsync($"api/business/{id}");
         return response.IsSuccessStatusCode;
     }
+    public async Task<BusinessDetailsModel?> GetOneById(int id)
+    {
+        var business= await _http.GetFromJsonAsync<BusinessDetailsModel>($"api/business/{id}");
+        return business;
+    } 
+    public async Task AddPackageToBusiness(int businessId,PackageAddModel package)
+    {
+        await _http.PostAsJsonAsync($"api/business/{businessId}/addPackage",package);
+    }
 }

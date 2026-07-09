@@ -8,7 +8,7 @@ public class Business
     public string? Description{get;set;}
     public required string Contact {get;set;}
     public required  int BusinessTypeId{get;set;}
-    public  required BusinessType BusinessType{get;set;}
+    public BusinessType BusinessType{get;set;} = null!;
     public ICollection<Package> Packages=new List<Package>();
     
     
