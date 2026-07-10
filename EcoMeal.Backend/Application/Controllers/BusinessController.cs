@@ -42,6 +42,7 @@ public class BusinessController: ControllerBase
                 Address = b.Address,
                 Description = b.Description,
                 Contact = b.Contact,
+                BusinessTypeId = b.BusinessTypeId,
                 BusinessTypeName = b.BusinessType.Name,
                 Packages = b.Packages.Select(p => new PackageDTO
                 {

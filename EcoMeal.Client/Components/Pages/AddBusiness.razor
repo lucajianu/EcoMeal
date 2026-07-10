@@ -1,0 +1,102 @@
+@page "/addBusiness"
+@page "/editBusiness/{Id:int}"
+@using Microsoft.AspNetCore.Components
+@using EcoMeal.Site.Services
+@using EcoMeal.Site.Models
+
+<div class="container my-4" style="max-width: 640px;">
+    <h2>@(IsEdit ? "Editează business" : "Adaugă business")</h2>
+
+    <EditForm Model="BusinessModel" OnValidSubmit="SaveBusiness">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+        <label class="form-label">Nume</label>
+        <InputText class="form-control mb-2"
+                   @bind-Value="BusinessModel.Name"
+                   placeholder="Numele businessului" />
+        <ValidationMessage For="@(()=> BusinessModel.Name)"/>
+
+        <label class="form-label">Adresa</label>
+        <InputText class="form-control mb-2"
+                   @bind-Value="BusinessModel.Address"
+                   placeholder="Adresa" />
+        <ValidationMessage For="@(()=> BusinessModel.Address)"/>
+
+        <label class="form-label">Contact</label>
+        <InputText class="form-control mb-2"
+                   @bind-Value="BusinessModel.Contact"
+                   placeholder="Telefon / email" />
+        <ValidationMessage For="@(()=> BusinessModel.Contact)"/>
+
+        <label class="form-label">Descriere</label>
+        <InputTextArea @bind-Value="BusinessModel.Description"
+                       placeholder="Descriere"
+                       rows="4"
+                       class="form-control mb-2" />
+
+        <label class="form-label">Tip business</label>
+        <InputSelect @bind-Value="BusinessModel.BusinessTypeId"
+                     class="form-control mb-2">
+            <option value="0" disabled>Alege tipul...</option>
+            @foreach (var businessType in BusinessTypes)
+            {
+                <option value="@businessType.Id">@businessType.Name</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(()=> BusinessModel.BusinessTypeId)"/>
+
+        <button type="submit" class="btn btn-primary mt-3">@(IsEdit ? "Salvează modificările" : "Adaugă business")</button>
+    </EditForm>
+</div>
+
+@code {
+        [Parameter]
+        public int? Id{get;set;}
+        [Inject]
+        public required BusinessService BusinessService{get;set;}
+        [Inject]
+        public required NavigationManager NavigationManager{get;set;}
+
+        private bool IsEdit => Id.HasValue;
+        private List<BusinessTypeModel> BusinessTypes{get;set;}=new();
+
+        public BusinessAddModel BusinessModel{get;set;}=new BusinessAddModel()
+        {
+            Name=string.Empty,
+            Address=string.Empty,
+            Description=string.Empty,
+            Contact=string.Empty,
+            BusinessTypeId=0,
+        };
+
+        protected override async Task OnInitializedAsync()
+        {
+            BusinessTypes = await BusinessService.GetBusinessTypesAsync();
+            if (Id.HasValue)
+            {
+                var business = await BusinessService.GetOneById(Id.Value);
+                if (business is not null)
+                {
+                    BusinessModel.Name = business.Name;
+                    BusinessModel.Address = business.Address;
+                    BusinessModel.Description = business.Description ?? string.Empty;
+                    BusinessModel.Contact = business.Contact;
+                    BusinessModel.BusinessTypeId = business.BusinessTypeId;
+                }
+            }
+        }
+
+        public async Task SaveBusiness()
+        {
+            if (Id.HasValue)
+            {
+                await BusinessService.UpdateBusinessAsync(Id.Value, BusinessModel);
+            }
+            else
+            {
+                await BusinessService.AddBusinessAsync(BusinessModel);
+            }
+            NavigationManager.NavigateTo("/");
+        }
+
+}

@@ -25,6 +25,49 @@
             + Adaugă pachet
         </button >
     </div>
+
+    @if (!Business.Packages.Any())
+    {
+        <p class="text-secondary">Nu există pachete încă.</p>
+    }
+    else
+    {
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Nume</th>
+                    <th>Tip</th>
+                    <th>Preț</th>
+                    <th>Pick-up</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var package in Business.Packages)
+                {
+                    <tr>
+                        <td>
+                            <strong>@package.Name</strong>
+                            <div class="text-muted small">@package.Description</div>
+                        </td>
+                        <td>@package.PackageTypeName</td>
+                        <td>@package.Price lei</td>
+                        <td>@package.StartPickup.ToString("dd.MM HH:mm") &ndash; @package.EndPickup.ToString("dd.MM HH:mm")</td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-outline-secondary me-1"
+                                    @onclick="() => NavigateToEditPackage(package.Id)">
+                                Editează
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    @onclick="() => DeletePackage(package.Id)">
+                                Șterge
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 </div>
 
 @code {
@@ -34,7 +77,9 @@
         [Inject]
         public required BusinessService businessService { get; set; }
         [Inject]
-        public required NavigationManager NavigationManager { get; set; } 
+        public required PackageService PackageService { get; set; }
+        [Inject]
+        public required NavigationManager NavigationManager { get; set; }
 
         private BusinessDetailsModel? Business;
 
@@ -45,5 +90,16 @@
         public void NavigateToAddPackage(){
                 NavigationManager.NavigateTo($"business/{Id}/addPackage");
         }
-        
+        public void NavigateToEditPackage(int packageId){
+                NavigationManager.NavigateTo($"business/{Id}/editPackage/{packageId}");
+        }
+        public async Task DeletePackage(int packageId)
+        {
+            var success = await PackageService.DeletePackageAsync(packageId);
+            if (success)
+            {
+                Business = await businessService.GetOneById(Id);
+            }
+        }
+
 }

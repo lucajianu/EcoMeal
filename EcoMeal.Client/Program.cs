@@ -9,6 +9,7 @@ builder.Services.AddHttpClient("EcoMealApi",client=> client.BaseAddress= new Uri
 builder.Services.AddScoped(sp=> sp.GetRequiredService<IHttpClientFactory>()
 .CreateClient("EcoMealApi"));;
 builder.Services.AddScoped<EcoMeal.Site.Services.BusinessService>();
+builder.Services.AddScoped<EcoMeal.Site.Services.PackageService>();
 var app = builder.Build();
 
 

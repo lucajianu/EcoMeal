@@ -14,6 +14,7 @@ public class PackageAddModel
     public DateTime StartPickup { get; set; }
     [Required]
     public DateTime EndPickup { get; set; }
-    [Required]
+    [Range(1, int.MaxValue, ErrorMessage = "Alege tipul de pachet")]
     public int PackageTypeId { get; set; }
+    public int BusinessId { get; set; }
 }

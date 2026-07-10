@@ -1,10 +1,12 @@
 @page "/business/{BusinessId:int}/addPackage"
+@page "/business/{BusinessId:int}/editPackage/{PackageId:int}"
 @using Microsoft.AspNetCore.Components
 @using EcoMeal.Site.Services
-<h2>Adauga pachet</h2>
+@using EcoMeal.Site.Models
+<h2>@(IsEdit ? "Editează pachet" : "Adaugă pachet")</h2>
 
 
-<EditForm Model="PackageAddModel" OnValidSubmit="AddPackageToBusiness">
+<EditForm Model="PackageAddModel" OnValidSubmit="SavePackage">
     <DataAnnotationsValidator/>
     <ValidationSummary/>
     <label class="form-label">Nume</label>
@@ -40,32 +42,69 @@
                  class="form-control mb-2">
         <option value="0"
                 disabled>Alege tipul...</option>
-        @* foreach (var packageType in PackageTypes)
+        @foreach (var packageType in PackageTypes)
         {
             <option value="@packageType.Id">@packageType.Name</option>
-        } *@
+        }
     </InputSelect>
-    <button type="submit" class="btn btn-primary mt-3">Adaugă pachet</button>
+    <ValidationMessage For="@(()=> PackageAddModel.PackageTypeId)"/>
+    <button type="submit" class="btn btn-primary mt-3">@(IsEdit ? "Salvează modificările" : "Adaugă pachet")</button>
 
 </EditForm>
 
 @code {
-            [Parameter]
+        [Parameter]
         public int BusinessId{get;set;}
+        [Parameter]
+        public int? PackageId{get;set;}
         [Inject]
-        public required BusinessService BusinessService{get;set;} 
-      
+        public required PackageService PackageService{get;set;}
+        [Inject]
+        public required NavigationManager NavigationManager{get;set;}
+
+        private bool IsEdit => PackageId.HasValue;
+        private List<PackageTypeModel> PackageTypes{get;set;}=new();
+
         public PackageAddModel PackageAddModel{get;set;}=new PackageAddModel()
         {
             Name=string.Empty,
             Description=string.Empty,
             Price=0,
             StartPickup=DateTime.Now,
-            PackageTypeId=1,
+            PackageTypeId=0,
             EndPickup=DateTime.Now.AddHours(2),
         };
-        public async Task AddPackageToBusiness(){
-           await BusinessService.AddPackageToBusiness(BusinessId,PackageAddModel);
+
+        protected override async Task OnInitializedAsync()
+        {
+            PackageTypes = await PackageService.GetPackageTypesAsync();
+            if (PackageId.HasValue)
+            {
+                var package = await PackageService.GetPackageByIdAsync(PackageId.Value);
+                if (package is not null)
+                {
+                    PackageAddModel.Name = package.Name;
+                    PackageAddModel.Description = package.Description ?? string.Empty;
+                    PackageAddModel.Price = package.Price;
+                    PackageAddModel.StartPickup = package.StartPickup;
+                    PackageAddModel.EndPickup = package.EndPickup;
+                    PackageAddModel.PackageTypeId = package.PackageTypeId;
+                }
+            }
+        }
+
+        public async Task SavePackage()
+        {
+            if (PackageId.HasValue)
+            {
+                await PackageService.UpdatePackageAsync(PackageId.Value, PackageAddModel);
+            }
+            else
+            {
+                PackageAddModel.BusinessId = BusinessId;
+                await PackageService.AddPackageAsync(PackageAddModel);
+            }
+            NavigationManager.NavigateTo($"business/{BusinessId}");
         }
 
 }

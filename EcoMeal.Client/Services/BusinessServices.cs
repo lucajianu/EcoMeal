@@ -26,8 +26,17 @@ public class BusinessService// in sine este doar DTO-ul din backend
         var business= await _http.GetFromJsonAsync<BusinessDetailsModel>($"api/business/{id}");
         return business;
     } 
-    public async Task AddPackageToBusiness(int businessId,PackageAddModel package)
+    public async Task<List<BusinessTypeModel>> GetBusinessTypesAsync()
     {
-        await _http.PostAsJsonAsync($"api/business/{businessId}/addPackage",package);
+        var types = await _http.GetFromJsonAsync<List<BusinessTypeModel>>("api/businesstypes");
+        return types ?? new List<BusinessTypeModel>();
+    }
+    public async Task AddBusinessAsync(BusinessAddModel business)
+    {
+        await _http.PostAsJsonAsync("api/business", business);
+    }
+    public async Task UpdateBusinessAsync(int id, BusinessAddModel business)
+    {
+        await _http.PutAsJsonAsync($"api/business/{id}", business);
     }
 }

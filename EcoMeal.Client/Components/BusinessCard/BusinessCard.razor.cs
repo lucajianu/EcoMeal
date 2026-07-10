@@ -47,4 +47,9 @@ public partial class BusinessCard
     {
         Navigation.NavigateTo($"business/{Business.Id}");
     }
+
+    public void NavigateToEdit()
+    {
+        Navigation.NavigateTo($"editBusiness/{Business.Id}");
+    }
 }
