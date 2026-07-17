@@ -1,0 +1,152 @@
+@page "/manageOrders"
+@implements IDisposable
+@using EcoMeal.Client.Models
+@using EcoMeal.Site.Models
+@using EcoMeal.Site.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject OrderService OrderService
+@inject OrderNotificationService OrderNotifications
+
+<PageTitle>Comenzi primite</PageTitle>
+
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <div class="container">
+            <h1>Comenzi primite</h1>
+
+            @if (AllOrders is null)
+            {
+                <p>Loading...</p>
+            }
+            else if (!AllOrders.Any())
+            {
+                <div class="alert alert-light text-center text-muted">
+                    Nu exista comenzi.
+                </div>
+            }
+            else
+            {
+                <table class="table align-middle eco-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Business</th>
+                            <th>Pachet</th>
+                            <th>Client</th>
+                            <th>Pret</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in AllOrders)
+                        {
+                            <tr>
+                                <td class="text-muted small">@order.Date?.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>@order.BusinessName</td>
+                                <td><strong>@order.PackageName</strong> <span class="text-muted small">x@(order.Count)</span></td>
+                                <td>
+                                    @order.UserName
+                                    <div class="text-muted small">@order.UserContact</div>
+                                </td>
+                                <td>@order.Price RON</td>
+                                <td><span class="badge rounded-pill @StatusBadgeClass(order.Status)">@order.Status</span></td>
+                                <td class="text-end">
+                                    @if (order.Status == "Pending")
+                                    {
+                                        <button class="btn btn-sm btn-success me-1"
+                                                @onclick='() => UpdateStatus(order.Id, "Accepted")'>
+                                            Acceptă
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                @onclick='() => UpdateStatus(order.Id, "Rejected")'>
+                                            Respinge
+                                        </button>
+                                    }
+                                    else if (order.Status == "Accepted")
+                                    {
+                                        <button class="btn btn-sm btn-primary"
+                                                @onclick='() => UpdateStatus(order.Id, "Finished")'>
+                                            Finalizează
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="container">
+            <div class="alert alert-warning">Nu ai acces la aceasta pagina.</div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<OrderGetModel>? AllOrders;
+
+    protected override void OnInitialized()
+    {
+        // comenzile noi si anularile clientilor apar in tabel fara refresh
+        OrderNotifications.OrderPlaced += HandleNotification;
+        OrderNotifications.OrderStatusChanged += HandleNotification;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ReloadOrdersAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task ReloadOrdersAsync()
+    {
+        try
+        {
+            AllOrders = await OrderService.GetBusinessOrdersAsync();
+        }
+        catch (HttpRequestException)
+        {
+            AllOrders = new List<OrderGetModel>();
+        }
+    }
+
+    private void HandleNotification(OrderNotificationModel notification)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await ReloadOrdersAsync();
+            StateHasChanged();
+        });
+    }
+
+    private async Task UpdateStatus(int orderId, string status)
+    {
+        var success = await OrderService.UpdateStatusAsync(orderId, status);
+        if (success)
+        {
+            await ReloadOrdersAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        OrderNotifications.OrderPlaced -= HandleNotification;
+        OrderNotifications.OrderStatusChanged -= HandleNotification;
+    }
+
+    private static string StatusBadgeClass(string status) => status switch
+    {
+        "Pending" => "bg-warning-subtle text-warning-emphasis",
+        "Accepted" => "bg-info-subtle text-info-emphasis",
+        "Finished" => "bg-success-subtle text-success-emphasis",
+        "Rejected" => "bg-danger-subtle text-danger-emphasis",
+        "Cancelled" => "bg-secondary-subtle text-secondary-emphasis",
+        _ => "bg-light text-dark"
+    };
+}

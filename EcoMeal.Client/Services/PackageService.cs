@@ -22,9 +22,25 @@ public class PackageService
         }
         return await response.Content.ReadFromJsonAsync<PackageGetModel>();
     }
-    public async Task AddPackageAsync(PackageAddModel package)
+    public async Task<int?> AddPackageAsync(PackageAddModel package)
     {
-        await _http.PostAsJsonAsync("api/packages", package);
+        var response = await _http.PostAsJsonAsync("api/packages", package);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+        var created = await response.Content.ReadFromJsonAsync<CreatedIdModel>();
+        return created?.Id;
+    }
+    public async Task<bool> UploadImageAsync(int id, Microsoft.AspNetCore.Components.Forms.IBrowserFile file)
+    {
+        using var content = new MultipartFormDataContent();
+        var fileContent = new StreamContent(file.OpenReadStream(maxAllowedSize: 2 * 1024 * 1024));
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+        content.Add(fileContent, "file", file.Name);
+
+        var response = await _http.PostAsync($"api/packages/{id}/image", content);
+        return response.IsSuccessStatusCode;
     }
     public async Task UpdatePackageAsync(int id, PackageAddModel package)
     {

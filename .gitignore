@@ -1,0 +1,15 @@
+# Build output
+bin/
+obj/
+
+# IDE
+.vs/
+.vscode/
+*.user
+
+# Uploaded images (dev data, not source)
+EcoMeal.Backend/wwwroot/images/*
+!EcoMeal.Backend/wwwroot/images/.gitkeep
+
+# macOS
+.DS_Store

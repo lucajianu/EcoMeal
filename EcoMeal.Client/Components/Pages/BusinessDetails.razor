@@ -1,6 +1,7 @@
 @page "/business/{Id:int}"
 @using EcoMeal.Site.Models
 @using EcoMeal.Site.Services;
+@using Microsoft.AspNetCore.Components.Authorization
 
 
 
@@ -9,21 +10,31 @@
     return;
 }
 
-<div class="container my-4">
-    <h1 class="mb-3">@Business.Name</h1>
-    <p class="text-muted mb-4">@Business.Description</p>
-    <p class="text-muted mb-4"><strong>Contact:</strong> @Business.Contact</p>
-    <p class="text-muted mb-4"><strong>Tip afacere:</strong> @Business.BusinessTypeName</p>
-    <p class="text-muted mb-4"><strong>Adresa:</strong> @Business.Address</p>
+<PageTitle>@Business.Name · EcoMeal</PageTitle>
 
+<div class="container my-4">
+    <div class="ecomeal-hero px-4 py-4 mb-4">
+        @if (Business.ImageUrl is not null)
+        {
+            <img src="@Business.ImageUrl" alt="@Business.Name"
+                 style="width: 100%; max-height: 240px; object-fit: cover; border-radius: 12px;" class="mb-3" />
+        }
+        <span class="type-badge position-static d-inline-block mb-2">@Business.BusinessTypeName</span>
+        <h1 class="fw-bold mb-2">@Business.Name</h1>
+        <p class="mb-3">@Business.Description</p>
+        <p class="mb-1 small"><strong>Contact:</strong> @Business.Contact</p>
+        <p class="mb-0 small"><strong>Adresa:</strong> @Business.Address</p>
+    </div>
 
     <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
         <h2 class="mb-0">Pachete</h2>
-        <button type="button"
-                class="btn btn-primary"
-                @onclick="NavigateToAddPackage">
-            + Adaugă pachet
-        </button >
+        <AuthorizeView Roles="Admin">
+            <button type="button"
+                    class="btn btn-primary"
+                    @onclick="NavigateToAddPackage">
+                + Adaugă pachet
+            </button>
+        </AuthorizeView>
     </div>
 
     @if (!Business.Packages.Any())
@@ -32,12 +43,13 @@
     }
     else
     {
-        <table class="table align-middle">
+        <table class="table align-middle eco-table">
             <thead>
                 <tr>
                     <th>Nume</th>
                     <th>Tip</th>
                     <th>Preț</th>
+                    <th>Disponibile</th>
                     <th>Pick-up</th>
                     <th></th>
                 </tr>
@@ -47,21 +59,49 @@
                 {
                     <tr>
                         <td>
-                            <strong>@package.Name</strong>
-                            <div class="text-muted small">@package.Description</div>
+                            <div class="d-flex align-items-center gap-2">
+                                @if (package.ImageUrl is not null)
+                                {
+                                    <img src="@package.ImageUrl" alt="@package.Name"
+                                         style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" />
+                                }
+                                <div>
+                                    <strong>@package.Name</strong>
+                                    <div class="text-muted small">@package.Description</div>
+                                </div>
+                            </div>
                         </td>
                         <td>@package.PackageTypeName</td>
-                        <td>@package.Price lei</td>
-                        <td>@package.StartPickup.ToString("dd.MM HH:mm") &ndash; @package.EndPickup.ToString("dd.MM HH:mm")</td>
+                        <td><span class="eco-price">@package.Price lei</span></td>
+                        <td>
+                            @if (package.Available > 0)
+                            {
+                                <span class="badge bg-success-subtle text-success-emphasis">@package.Available</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary-subtle text-secondary-emphasis">Epuizat</span>
+                            }
+                        </td>
+                        <td><span class="eco-pickup-badge">@package.StartPickup.ToString("dd.MM HH:mm") &ndash; @package.EndPickup.ToString("dd.MM HH:mm")</span></td>
                         <td class="text-end">
-                            <button type="button" class="btn btn-sm btn-outline-secondary me-1"
-                                    @onclick="() => NavigateToEditPackage(package.Id)">
-                                Editează
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger"
-                                    @onclick="() => DeletePackage(package.Id)">
-                                Șterge
-                            </button>
+                            <AuthorizeView>
+                                <button type="button" class="btn btn-sm btn-success me-1"
+                                        disabled="@(!CanAddToCart(package))"
+                                        @onclick="() => AddToCart(package)">
+                                    Adaugă în coș
+                                </button>
+                            </AuthorizeView>
+                            <AuthorizeView Roles="Admin">
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1"
+                                        @onclick="() => NavigateToEditPackage(package.Id)">
+                                    Editează
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        @onclick="() => DeletePackage(package.Id)">
+                                    Șterge
+                                </button>
+                            </AuthorizeView>
                         </td>
                     </tr>
                 }
@@ -79,6 +119,8 @@
         [Inject]
         public required PackageService PackageService { get; set; }
         [Inject]
+        public required CartState Cart { get; set; }
+        [Inject]
         public required NavigationManager NavigationManager { get; set; }
 
         private BusinessDetailsModel? Business;
@@ -92,6 +134,25 @@
         }
         public void NavigateToEditPackage(int packageId){
                 NavigationManager.NavigateTo($"business/{Id}/editPackage/{packageId}");
+        }
+        // butonul se dezactiveaza cand tot stocul e deja in cos
+        private bool CanAddToCart(PackageGetModel package)
+        {
+            var inCart = Cart.Lines.FirstOrDefault(l => l.PackageId == package.Id)?.Count ?? 0;
+            return package.Available - inCart > 0;
+        }
+
+        private void AddToCart(PackageGetModel package)
+        {
+            Cart.Add(new CartLineModel
+            {
+                PackageId = package.Id,
+                PackageName = package.Name,
+                BusinessName = Business!.Name,
+                Price = package.Price,
+                Available = package.Available,
+                Count = 1
+            });
         }
         public async Task DeletePackage(int packageId)
         {

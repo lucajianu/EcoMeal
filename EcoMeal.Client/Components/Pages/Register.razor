@@ -1,0 +1,79 @@
+@page "/register"
+@using EcoMeal.Site.Models
+@using EcoMeal.Site.Models.Auth
+@using EcoMeal.Site.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Register · EcoMeal</PageTitle>
+
+<div class="eco-auth-wrap">
+    <div class="eco-form-card">
+        <div class="eco-auth-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M1.4 1.7c.917.527 1.813.98 2.686 1.377 3.283 1.498 6.703 2.146 9.288 4.363 1.52 1.303 2.396 3.253 2.373 5.235a.5.5 0 0 1-1-.011c.02-1.687-.73-3.35-2.023-4.459-2.4-2.058-5.61-2.65-9.053-4.22a37 37 0 0 1-2.279-1.14 21 21 0 0 0 .166 2.303c.293 2.199.939 4.263 2.497 5.684 1.577 1.437 4.187 2.286 8.4 2.041a.5.5 0 1 1 .058.999c-4.36.253-7.24-.618-9.132-2.343C1.591 9.845.917 7.517.609 5.2A22 22 0 0 1 .4 1.937V1.02z"/>
+            </svg>
+        </div>
+        <h3 class="text-center mb-1">Create your account</h3>
+        <p class="text-center text-secondary mb-4">Join EcoMeal and help reduce food waste</p>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+
+        <EditForm Model="registerModel" OnValidSubmit="HandleRegister" FormName="registerForm">
+            <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <InputText class="form-control" @bind-Value="registerModel.Email" />
+        <ValidationMessage For="() => registerModel.Email" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Password</label>
+        <InputText type="password" class="form-control" @bind-Value="registerModel.Password" />
+        <ValidationMessage For="() => registerModel.Password" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Confirm Password</label>
+        <InputText type="password" class="form-control" @bind-Value="registerModel.ConfirmPassword" />
+        <ValidationMessage For="() => registerModel.ConfirmPassword" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <InputText class="form-control" @bind-Value="registerModel.Name" />
+        <ValidationMessage For="() => registerModel.Name" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Contact Info</label>
+        <InputText class="form-control" @bind-Value="registerModel.Contact" />
+        <ValidationMessage For="() => registerModel.Contact" />
+    </div>
+
+            <button type="submit" class="btn btn-primary w-100 mt-2">Register</button>
+        </EditForm>
+
+        <p class="mt-4 mb-0 text-center">Already have an account? <a href="/login">Login</a></p>
+    </div>
+</div>
+
+@code {
+    private RegisterModel registerModel { get; set; } = new();
+
+    private string? errorMessage;
+
+    private async Task HandleRegister()
+    {
+        var result = await AuthService.RegisterAsync(registerModel.Email, registerModel.Password, registerModel.Name, registerModel.Contact);
+
+        if (result.Success)
+            Navigation.NavigateTo("/login");
+        else
+            errorMessage = result.ErrorMessage;
+    }
+}

@@ -7,6 +7,7 @@ public class BusinessModel
     public required  string Address{get;set;}
     public string? Description{get;set;}
     public required string  BusinessTypeName{get;set;}
+    public string? ImageUrl{get;set;}
 
 
 }

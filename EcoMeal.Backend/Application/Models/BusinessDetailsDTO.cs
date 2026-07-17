@@ -9,5 +9,6 @@ public class BusinessDetailsDTO
     public required string Contact { get; set; }
     public int BusinessTypeId { get; set; }
     public required string BusinessTypeName { get; set; }
+    public string? ImageUrl { get; set; }
     public List<PackageDTO> Packages { get; set; } = new();
 }

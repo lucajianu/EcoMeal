@@ -1,0 +1,62 @@
+@page "/login"
+@using EcoMeal.Site.Models
+@using EcoMeal.Site.Models.Auth
+@using EcoMeal.Site.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Login · EcoMeal</PageTitle>
+
+<div class="eco-auth-wrap">
+    <div class="eco-form-card">
+        <div class="eco-auth-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+            </svg>
+        </div>
+        <h3 class="text-center mb-1">Welcome back</h3>
+        <p class="text-center text-secondary mb-4">Log in to your EcoMeal account</p>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+
+        <EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="loginForm">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <InputText class="form-control" @bind-Value="loginModel.Email" />
+                <ValidationMessage For="() => loginModel.Email" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <InputText type="password" class="form-control" @bind-Value="loginModel.Password" />
+                <ValidationMessage For="() => loginModel.Password" />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mt-2">Login</button>
+        </EditForm>
+
+        <p class="mt-4 mb-0 text-center">Don't have an account? <a href="/register">Register</a></p>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel { get; set; } = new();
+
+    private string? errorMessage;
+
+    private async Task HandleLogin()
+    {
+        var result = await AuthService.LoginAsync(loginModel.Email, loginModel.Password);
+
+        if (result.Success)
+            Navigation.NavigateTo("/");
+        else
+            errorMessage = result.ErrorMessage;
+    }
+}

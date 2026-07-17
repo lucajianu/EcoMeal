@@ -4,14 +4,17 @@ using Microsoft.AspNetCore.Components;
 
 namespace EcoMeal.Site.Components.BusinessList;
 
-public partial class BusinessList
+public partial class BusinessList : IDisposable
 {
     [Inject]
     public required BusinessService BusinessService { get; set; }
 
+    [Inject]
+    public required SearchState SearchState { get; set; }
+
     private List<BusinessModel>? Businesses { get; set; }
 
-    private string SearchTerm { get; set; } = string.Empty;
+    private string SearchTerm => SearchState.Term;
 
     private string? SelectedType { get; set; }
 
@@ -27,7 +30,18 @@ public partial class BusinessList
 
     protected override async Task OnInitializedAsync()
     {
+        SearchState.Changed += HandleSearchChanged;
         Businesses = await BusinessService.GetAllAsync();
+    }
+
+    private void HandleSearchChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        SearchState.Changed -= HandleSearchChanged;
     }
 
     private void DeleteBusiness(int id)

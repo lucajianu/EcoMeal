@@ -1,23 +1,22 @@
-using EcoMeal.Backend.Entities;
 
+namespace EcoMeal.Backend.Entities;
 public enum State
 {
-    PENDING, 
-    ACCEPTED,
-    REJECT, 
-    FINISHED, 
-    CANCELLED
+    Pending,
+    Accepted,
+    Rejected,
+    Finished,
+    Cancelled
 }
 
 public class Order
 {
-    public  int Id{get;set;}
-    public required int UserId{get;set;}
-    public required User User{get;set;}
-    public required int PackageId{get;set;}
-    public required Package Package {get;set;}
-    public required State Status{get;set;}
-    public DateTime? PlacedAt{get;set;}
-    
-
+    public int Id{get;set;}
+    public int Count{get;set;}
+    public int UserId{get;set;}
+    public int PackageId{get;set;}
+    public State Status{get;set;} = State.Pending;
+    public DateTime? Date{get;set;}
+    public Package? Package {get;set;}
+    public User? User{get;set;}
 }

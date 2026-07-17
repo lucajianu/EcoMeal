@@ -5,7 +5,8 @@
 @using EcoMeal.Site.Models
 
 <div class="container my-4" style="max-width: 640px;">
-    <h2>@(IsEdit ? "Editează business" : "Adaugă business")</h2>
+    <div class="eco-form-card">
+    <h2 class="mb-3">@(IsEdit ? "Editează business" : "Adaugă business")</h2>
 
     <EditForm Model="BusinessModel" OnValidSubmit="SaveBusiness">
         <DataAnnotationsValidator/>
@@ -34,6 +35,19 @@
                        rows="4"
                        class="form-control mb-2" />
 
+        <label class="form-label">Imagine</label>
+        @if (CurrentImageUrl is not null)
+        {
+            <div class="mb-2">
+                <img src="@CurrentImageUrl" alt="Imaginea businessului" style="max-height: 120px; border-radius: 8px;" />
+            </div>
+        }
+        <InputFile class="form-control mb-2" accept=".jpg,.jpeg,.png,.webp" OnChange="HandleImageSelected" />
+        @if (ImageError is not null)
+        {
+            <div class="text-danger small mb-2">@ImageError</div>
+        }
+
         <label class="form-label">Tip business</label>
         <InputSelect @bind-Value="BusinessModel.BusinessTypeId"
                      class="form-control mb-2">
@@ -47,6 +61,7 @@
 
         <button type="submit" class="btn btn-primary mt-3">@(IsEdit ? "Salvează modificările" : "Adaugă business")</button>
     </EditForm>
+    </div>
 </div>
 
 @code {
@@ -59,6 +74,9 @@
 
         private bool IsEdit => Id.HasValue;
         private List<BusinessTypeModel> BusinessTypes{get;set;}=new();
+        private IBrowserFile? SelectedImage;
+        private string? CurrentImageUrl;
+        private string? ImageError;
 
         public BusinessAddModel BusinessModel{get;set;}=new BusinessAddModel()
         {
@@ -82,19 +100,37 @@
                     BusinessModel.Description = business.Description ?? string.Empty;
                     BusinessModel.Contact = business.Contact;
                     BusinessModel.BusinessTypeId = business.BusinessTypeId;
+                    CurrentImageUrl = business.ImageUrl;
                 }
             }
         }
 
+        private void HandleImageSelected(InputFileChangeEventArgs e)
+        {
+            ImageError = null;
+            SelectedImage = e.File;
+        }
+
         public async Task SaveBusiness()
         {
+            int? businessId = Id;
             if (Id.HasValue)
             {
                 await BusinessService.UpdateBusinessAsync(Id.Value, BusinessModel);
             }
             else
             {
-                await BusinessService.AddBusinessAsync(BusinessModel);
+                businessId = await BusinessService.AddBusinessAsync(BusinessModel);
+            }
+
+            if (businessId.HasValue && SelectedImage is not null)
+            {
+                var uploaded = await BusinessService.UploadImageAsync(businessId.Value, SelectedImage);
+                if (!uploaded)
+                {
+                    ImageError = "Imaginea nu a putut fi încărcată (max 2 MB, doar jpg/png/webp).";
+                    return;
+                }
             }
             NavigationManager.NavigateTo("/");
         }

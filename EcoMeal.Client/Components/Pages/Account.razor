@@ -1,0 +1,83 @@
+@page "/account"
+@using System.Net.Http.Json
+@using EcoMeal.Site.Models.Auth
+@using EcoMeal.Site.Services
+@inject AuthService AuthService
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>My account · EcoMeal</PageTitle>
+
+<div class="eco-auth-wrap">
+    <div class="eco-form-card">
+        @if (me is null)
+        {
+            <div class="d-flex justify-content-center py-4">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="eco-avatar">@Initial</div>
+            <h3 class="text-center mb-1">@me.Name</h3>
+            <p class="text-center text-secondary mb-4">@me.Email</p>
+
+            <div class="eco-detail-row">
+                <span class="eco-detail-label">Contact</span>
+                <span class="eco-detail-value">@me.Contact</span>
+            </div>
+            <div class="eco-detail-row">
+                <span class="eco-detail-label">Roles</span>
+                <span>
+                    @foreach (var role in me.Roles)
+                    {
+                        <span class="eco-role-badge">@role</span>
+                    }
+                </span>
+            </div>
+
+            <button class="btn btn-success w-100 mt-4" @onclick='() => Navigation.NavigateTo("/orders")'>Comenzile mele</button>
+            <button class="btn btn-outline-danger w-100 mt-2" @onclick="HandleLogout">Logout</button>
+        }
+    </div>
+</div>
+
+@code {
+    private UserMeResponse? me;
+
+    private string Initial =>
+        string.IsNullOrEmpty(me?.Name) ? "?" : me.Name[..1].ToUpperInvariant();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await AuthService.LoadTokenAsync();
+        if (!AuthService.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        var response = await Http.GetAsync("api/auth/me");
+        if (!response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        me = await response.Content.ReadFromJsonAsync<UserMeResponse>();
+        StateHasChanged();
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+}

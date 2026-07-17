@@ -1,6 +1,7 @@
 @namespace EcoMeal.Site.Components.BusinessList
 @using EcoMeal.Site.Components.BusinessCard
 @using EcoMeal.Site.Models
+@using Microsoft.AspNetCore.Components.Authorization
 
 @if (Businesses is null)
 {
@@ -12,13 +13,7 @@
 }
 else
 {
-    <div class="mb-3">
-        <input class="form-control search-input"
-               placeholder="Search businesses..."
-               @bind="SearchTerm" @bind:event="oninput" />
-    </div>
-
-    <div class="d-flex flex-wrap gap-2 mb-4">
+    <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
         <button class="chip @(SelectedType is null ? "chip-active" : null)"
                 @onclick="() => SelectedType = null">
             All
@@ -30,6 +25,9 @@ else
                 @type
             </button>
         }
+        <AuthorizeView Roles="Admin">
+            <a class="btn btn-primary btn-sm text-nowrap ms-auto" href="addBusiness">+ Adaugă business</a>
+        </AuthorizeView>
     </div>
 
     @if (!Filtered.Any())

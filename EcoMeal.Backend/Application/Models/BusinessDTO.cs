@@ -7,4 +7,5 @@ public class BusinessDTO
     public string? Description{get;set;}
     public required string Contact {get;set;}
     public  required string BusinessTypeName{get;set;}
+    public string? ImageUrl{get;set;}
 }

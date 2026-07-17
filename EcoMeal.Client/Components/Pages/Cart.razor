@@ -1,0 +1,127 @@
+@page "/cart"
+@implements IDisposable
+@using EcoMeal.Site.Models
+@using EcoMeal.Site.Services
+@inject CartState CartState
+@inject OrderService OrderService
+@inject NavigationManager Navigation
+
+<PageTitle>Coșul meu</PageTitle>
+
+<div class="container" style="max-width: 860px;">
+    <h1>Coșul meu</h1>
+
+    @if (!CartState.Lines.Any())
+    {
+        <div class="alert alert-light text-center text-muted">
+            Coșul este gol. <a href="/">Vezi ofertele</a>
+        </div>
+    }
+    else
+    {
+        <table class="table align-middle eco-table">
+            <thead>
+                <tr>
+                    <th>Pachet</th>
+                    <th>Business</th>
+                    <th>Preț</th>
+                    <th style="width: 110px;">Cantitate</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var line in CartState.Lines)
+                {
+                    <tr>
+                        <td><strong>@line.PackageName</strong></td>
+                        <td class="text-muted">@line.BusinessName</td>
+                        <td>@line.Price RON</td>
+                        <td>
+                            <input type="number" class="form-control form-control-sm"
+                                   min="1" max="@line.Available" value="@line.Count"
+                                   @onchange="e => CartState.SetCount(line.PackageId, int.TryParse(e.Value?.ToString(), out var c) ? c : 1)" />
+                        </td>
+                        <td class="fw-semibold">@line.LineTotal RON</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-danger"
+                                    @onclick="() => CartState.Remove(line.PackageId)">
+                                Șterge
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" class="text-end fw-bold">Total</td>
+                    <td class="fw-bold">@CartState.TotalPrice RON</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="eco-form-card mt-4">
+            <h5 class="mb-3">Plată</h5>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" id="payPickup" name="payment"
+                       checked="@(PaymentMethod == "pickup")" @onchange='() => PaymentMethod = "pickup"' />
+                <label class="form-check-label" for="payPickup">Plata la ridicare (numerar)</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" id="payCard" name="payment"
+                       checked="@(PaymentMethod == "card")" @onchange='() => PaymentMethod = "card"' />
+                <label class="form-check-label" for="payCard">Card la ridicare</label>
+            </div>
+            <p class="text-muted small mt-2 mb-0">Plata se face la ridicarea comenzii — nu se percepe nimic online.</p>
+        </div>
+
+        @if (CheckoutError is not null)
+        {
+            <div class="alert alert-danger mt-3" style="white-space: pre-line;">@CheckoutError</div>
+        }
+
+        <button class="btn btn-success w-100 mt-3" disabled="@IsPlacing" @onclick="Checkout">
+            @(IsPlacing ? "Se plasează..." : $"Plasează comenzile ({CartState.Lines.Count})")
+        </button>
+    }
+</div>
+
+@code {
+    private string PaymentMethod = "pickup";
+    private string? CheckoutError;
+    private bool IsPlacing;
+
+    protected override void OnInitialized()
+    {
+        CartState.OnChange += HandleCartChanged;
+    }
+
+    private void HandleCartChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Checkout()
+    {
+        CheckoutError = null;
+        IsPlacing = true;
+        var error = await OrderService.CheckoutAsync(CartState.Lines);
+        IsPlacing = false;
+
+        if (error is null)
+        {
+            CartState.Clear();
+            Navigation.NavigateTo("/orders");
+        }
+        else
+        {
+            CheckoutError = error;
+        }
+    }
+
+    public void Dispose()
+    {
+        CartState.OnChange -= HandleCartChanged;
+    }
+}

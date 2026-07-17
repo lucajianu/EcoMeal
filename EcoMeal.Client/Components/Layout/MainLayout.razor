@@ -1,21 +1,257 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@implements IDisposable
+@using EcoMeal.Site.Models
+@using EcoMeal.Site.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject SearchState SearchState
+@inject OrderNotificationService OrderNotifications
+@inject AuthenticationStateProvider AuthStateProvider
+@inject CartState Cart
+@inject NotificationCenter Notifications
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
+    <header>
+        <nav class="navbar navbar-expand-lg eco-navbar px-4">
+            <a class="navbar-brand eco-brand d-flex align-items-center gap-2" href="/">
+                <span class="eco-brand-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 16a.5.5 0 0 1-.5-.5v-1.293l-2.146 2.147a.5.5 0 0 1-.708-.708L6.793 13.5H5.5a.5.5 0 0 1 0-1h2A.5.5 0 0 1 8 13v2.5a.5.5 0 0 1-.5.5z" opacity="0"/>
+                        <path d="M1.4 1.7c.917.527 1.813.98 2.686 1.377 3.283 1.498 6.703 2.146 9.288 4.363 1.52 1.303 2.396 3.253 2.373 5.235a.5.5 0 0 1-1-.011c.02-1.687-.73-3.35-2.023-4.459-2.4-2.058-5.61-2.65-9.053-4.22a37 37 0 0 1-2.279-1.14 21 21 0 0 0 .166 2.303c.293 2.199.939 4.263 2.497 5.684 1.577 1.437 4.187 2.286 8.4 2.041a.5.5 0 1 1 .058.999c-4.36.253-7.24-.618-9.132-2.343C1.591 9.845.917 7.517.609 5.2A22 22 0 0 1 .4 1.937V1.02z"/>
+                    </svg>
+                </span>
+                EcoMeal
+            </a>
+            <div class="flex-grow-1 d-flex justify-content-center px-4">
+                <input class="form-control eco-nav-search"
+                       placeholder="Search businesses..."
+                       @bind="SearchTerm" @bind:event="oninput" />
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <AuthorizeView Context="notificationsContext">
+                    <Authorized>
+                        <div style="position: relative;">
+                            <button class="eco-user-btn" title="Notificări" style="position: relative;"
+                                    @onclick="ToggleNotifications">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6"/>
+                                </svg>
+                                @if (Notifications.UnreadCount > 0)
+                                {
+                                    <span style="position: absolute; top: -4px; right: -4px; background: #dc3545; color: white; border-radius: 999px; font-size: .65rem; line-height: 1.4; padding: 0 5px;">
+                                        @Notifications.UnreadCount
+                                    </span>
+                                }
+                            </button>
+                            @if (ShowNotifications)
+                            {
+                                <div style="position: absolute; right: 0; top: calc(100% + 8px); width: 340px; max-height: 420px; overflow-y: auto; background: white; border: 1px solid rgba(0,0,0,.12); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.15); z-index: 1060;">
+                                    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                                        <strong>Notificări</strong>
+                                        @if (Notifications.Items.Any())
+                                        {
+                                            <button class="btn btn-sm btn-link text-decoration-none p-0" @onclick="ClearNotifications">Golește</button>
+                                        }
+                                    </div>
+                                    @if (!Notifications.Items.Any())
+                                    {
+                                        <div class="px-3 py-4 text-center text-muted small">Nicio notificare.</div>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var item in Notifications.Items)
+                                        {
+                                            <div class="px-3 py-2 border-bottom @(item.IsRead ? "" : "bg-light")">
+                                                <div class="small @item.CssClass">@item.Message</div>
+                                                <div class="text-muted" style="font-size: .7rem;">@item.Date.ToString("dd.MM HH:mm")</div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+                <AuthorizeView Context="cartContext">
+                    <Authorized>
+                        <button class="eco-user-btn" title="Coșul meu" style="position: relative;"
+                                @onclick='() => Navigation.NavigateTo("/cart")'>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                            </svg>
+                            @if (Cart.TotalCount > 0)
+                            {
+                                <span style="position: absolute; top: -4px; right: -4px; background: #dc3545; color: white; border-radius: 999px; font-size: .65rem; line-height: 1.4; padding: 0 5px;">
+                                    @Cart.TotalCount
+                                </span>
+                            }
+                        </button>
+                    </Authorized>
+                </AuthorizeView>
+                <AuthorizeView Roles="Admin" Context="manageOrdersContext">
+                    <Authorized>
+                        <button class="btn eco-btn-nav-outline btn-sm" @onclick='() => Navigation.NavigateTo("/manageOrders")'>Comenzi</button>
+                    </Authorized>
+                </AuthorizeView>
+                <AuthorizeView Context="logoutContext">
+                    <Authorized>
+                        <button class="btn eco-btn-nav-outline btn-sm" @onclick="HandleLogout">Logout</button>
+                    </Authorized>
+                </AuthorizeView>
+                <button class="eco-user-btn" title="Account" @onclick="HandleAccountClick">
+                    <AuthorizeView Roles="Admin" Context="adminContext">
+                        <Authorized>
+                            @* admin: user with a tie, like in the presentation *@
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="18" fill="currentColor" viewBox="0 0 448 512">
+                                <path d="M224 0a128 128 0 1 1 0 256A128 128 0 1 1 224 0zM209.1 359.2l-18.6-31c-6.4-10.7 1.3-24.2 13.7-24.2l19.8 0 19.8 0c12.4 0 20.1 13.6 13.7 24.2l-18.6 31 33.4 123.9 36-146.9c2-8.1 9.8-13.4 17.9-11.3c70.1 17.6 121.9 81 121.9 156.4c0 17-13.8 30.7-30.7 30.7L285.5 512c-2.5 0-5-.3-7.4-.8L224 512l-54.1-.8c-2.4 .5-4.9 .8-7.4 .8L30.7 512C13.8 512 0 498.2 0 481.3c0-75.5 51.9-138.9 121.9-156.4c8.1-2 15.9 3.3 17.9 11.3l36 146.9 33.4-123.9z"/>
+                            </svg>
+                            <span class="eco-user-dot"></span>
+                        </Authorized>
+                        <NotAuthorized>
+                            <AuthorizeView Context="userContext">
+                                <Authorized>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2 1a5 5 0 0 1 5 5v1H1v-1a5 5 0 0 1 5-5z"/>
+                                    </svg>
+                                    <span class="eco-user-dot"></span>
+                                </Authorized>
+                                <NotAuthorized>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2 1a5 5 0 0 1 5 5v1H1v-1a5 5 0 0 1 5-5z"/>
+                                    </svg>
+                                </NotAuthorized>
+                            </AuthorizeView>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </button>
+            </div>
+        </nav>
+    </header>
     <main>
-        <div class="top-row px-4"></div>
-
-        <article class="content px-4">
+        <article class="content px-4 py-3">
             @Body
         </article>
     </main>
 </div>
+
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private bool ShowNotifications;
+
+    protected override void OnInitialized()
+    {
+        // pornim/oprim conexiunea de notificari cand utilizatorul se (de)logheaza
+        AuthStateProvider.AuthenticationStateChanged += HandleAuthStateChanged;
+        Notifications.OnChange += HandleNotificationsChanged;
+        Cart.OnChange += HandleCartChanged;
+    }
+
+    private void HandleNotificationsChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleNotifications()
+    {
+        ShowNotifications = !ShowNotifications;
+        if (!ShowNotifications)
+        {
+            // la inchidere, tot ce s-a vazut e considerat citit
+            Notifications.MarkAllRead();
+        }
+    }
+
+    private void ClearNotifications()
+    {
+        Notifications.Clear();
+        ShowNotifications = false;
+    }
+
+    private void HandleCartChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await AuthService.LoadTokenAsync();
+            await TryStartNotificationsAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task TryStartNotificationsAsync()
+    {
+        if (AuthService.IsAuthenticated && !OrderNotifications.IsConnected)
+        {
+            try
+            {
+                await OrderNotifications.StartAsync(AuthService.Token!);
+            }
+            catch
+            {
+                // backend-ul poate fi oprit; aplicatia merge si fara notificari live
+            }
+        }
+    }
+
+    private void HandleAuthStateChanged(Task<AuthenticationState> stateTask)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            if (AuthService.IsAuthenticated)
+            {
+                await TryStartNotificationsAsync();
+            }
+            else
+            {
+                await OrderNotifications.StopAsync();
+            }
+        });
+    }
+
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= HandleAuthStateChanged;
+        Notifications.OnChange -= HandleNotificationsChanged;
+        Cart.OnChange -= HandleCartChanged;
+    }
+
+    private async Task HandleAccountClick()
+    {
+        // re-read the token from browser storage so the decision is always current,
+        // even right after a page refresh or login
+        await AuthService.LoadTokenAsync();
+        Navigation.NavigateTo(AuthService.IsAuthenticated ? "/account" : "/login");
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+
+    private string SearchTerm
+    {
+        get => SearchState.Term;
+        set
+        {
+            SearchState.SetTerm(value);
+
+            // typing anywhere brings you to the business list, like on food-delivery sites
+            if (!string.IsNullOrEmpty(value) && Navigation.ToBaseRelativePath(Navigation.Uri) != string.Empty)
+            {
+                Navigation.NavigateTo("/");
+            }
+        }
+    }
+}

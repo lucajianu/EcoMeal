@@ -1,11 +1,12 @@
 using EcoMeal.Backend.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-public class EcoMealDbContext: DbContext// baza noastra de date
+public class EcoMealDbContext: IdentityDbContext<User,IdentityRole<int>,int>// baza noastra de date
 {
-  public EcoMealDbContext(DbContextOptions<EcoMealDbContext> options) : base(options)
-    {   }
-    public DbSet<User> Users{get;set;}   //am creat tabelul users
+  public EcoMealDbContext(DbContextOptions<EcoMealDbContext> options) : base(options){}
+    
       public DbSet<BusinessType> BusinessTypes{get;set;}
        public DbSet<PackageType> PackageTypes{get;set;}
        public DbSet<Business> Businesses{get;set;}
@@ -14,11 +15,18 @@ public class EcoMealDbContext: DbContext// baza noastra de date
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+      base.OnModelCreating(modelBuilder);
     
         modelBuilder.Entity<Business>()
         .HasOne(b=>b.BusinessType)
         .WithMany(b=>b.Businesses)
         .HasForeignKey(b=>b.BusinessTypeId);
+
+        // stocam enum-ul ca text ("Pending", "Accepted"...) ca sa fie lizibil in baza de date
+        modelBuilder.Entity<Order>()
+        .Property(o=>o.Status)
+        .HasConversion<string>()
+        .HasMaxLength(20);
 
         modelBuilder.Entity<Order>()
         .HasOne(o=>o.User)

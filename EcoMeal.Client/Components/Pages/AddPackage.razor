@@ -3,7 +3,9 @@
 @using Microsoft.AspNetCore.Components
 @using EcoMeal.Site.Services
 @using EcoMeal.Site.Models
-<h2>@(IsEdit ? "Editează pachet" : "Adaugă pachet")</h2>
+<div class="container my-4" style="max-width: 640px;">
+    <div class="eco-form-card">
+<h2 class="mb-3">@(IsEdit ? "Editează pachet" : "Adaugă pachet")</h2>
 
 
 <EditForm Model="PackageAddModel" OnValidSubmit="SavePackage">
@@ -25,6 +27,12 @@
                  placeholder="Pret"
                  class="form-control mb-2" />
 
+    <label class="form-label">Număr de pachete</label>
+    <InputNumber @bind-Value="PackageAddModel.NoPackage"
+                 placeholder="Cantitate disponibilă"
+                 class="form-control mb-2" />
+    <ValidationMessage For="@(()=> PackageAddModel.NoPackage)"/>
+
     <label class="form-label">Start Pick-up</label>
     <InputDate @bind-Value="PackageAddModel.StartPickup"
                Type="InputDateType.DateTimeLocal"
@@ -36,6 +44,19 @@
                Type="InputDateType.DateTimeLocal"
                placeholder="End Pick-up"
                class="form-control mb-2" />
+
+    <label class="form-label">Imagine</label>
+    @if (CurrentImageUrl is not null)
+    {
+        <div class="mb-2">
+            <img src="@CurrentImageUrl" alt="Imaginea pachetului" style="max-height: 120px; border-radius: 8px;" />
+        </div>
+    }
+    <InputFile class="form-control mb-2" accept=".jpg,.jpeg,.png,.webp" OnChange="HandleImageSelected" />
+    @if (ImageError is not null)
+    {
+        <div class="text-danger small mb-2">@ImageError</div>
+    }
 
     <label class="form-label">Tip pachet</label>
     <InputSelect @bind-Value="PackageAddModel.PackageTypeId"
@@ -51,6 +72,8 @@
     <button type="submit" class="btn btn-primary mt-3">@(IsEdit ? "Salvează modificările" : "Adaugă pachet")</button>
 
 </EditForm>
+    </div>
+</div>
 
 @code {
         [Parameter]
@@ -64,6 +87,9 @@
 
         private bool IsEdit => PackageId.HasValue;
         private List<PackageTypeModel> PackageTypes{get;set;}=new();
+        private IBrowserFile? SelectedImage;
+        private string? CurrentImageUrl;
+        private string? ImageError;
 
         public PackageAddModel PackageAddModel{get;set;}=new PackageAddModel()
         {
@@ -86,15 +112,24 @@
                     PackageAddModel.Name = package.Name;
                     PackageAddModel.Description = package.Description ?? string.Empty;
                     PackageAddModel.Price = package.Price;
+                    PackageAddModel.NoPackage = package.NoPackage;
                     PackageAddModel.StartPickup = package.StartPickup;
                     PackageAddModel.EndPickup = package.EndPickup;
                     PackageAddModel.PackageTypeId = package.PackageTypeId;
+                    CurrentImageUrl = package.ImageUrl;
                 }
             }
         }
 
+        private void HandleImageSelected(InputFileChangeEventArgs e)
+        {
+            ImageError = null;
+            SelectedImage = e.File;
+        }
+
         public async Task SavePackage()
         {
+            int? savedPackageId = PackageId;
             if (PackageId.HasValue)
             {
                 await PackageService.UpdatePackageAsync(PackageId.Value, PackageAddModel);
@@ -102,7 +137,17 @@
             else
             {
                 PackageAddModel.BusinessId = BusinessId;
-                await PackageService.AddPackageAsync(PackageAddModel);
+                savedPackageId = await PackageService.AddPackageAsync(PackageAddModel);
+            }
+
+            if (savedPackageId.HasValue && SelectedImage is not null)
+            {
+                var uploaded = await PackageService.UploadImageAsync(savedPackageId.Value, SelectedImage);
+                if (!uploaded)
+                {
+                    ImageError = "Imaginea nu a putut fi încărcată (max 2 MB, doar jpg/png/webp).";
+                    return;
+                }
             }
             NavigationManager.NavigateTo($"business/{BusinessId}");
         }

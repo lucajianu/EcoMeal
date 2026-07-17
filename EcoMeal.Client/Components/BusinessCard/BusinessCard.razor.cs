@@ -33,7 +33,7 @@ public partial class BusinessCard
             return $"accent-{sum % 5}";
         }
     }
-
+    
     private async Task DeleteBusiness()
     {
         var success = await BusinessService.DeleteAsync(Business.Id);
