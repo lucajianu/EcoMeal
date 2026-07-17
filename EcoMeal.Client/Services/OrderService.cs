@@ -68,6 +68,24 @@ public class OrderService
         return response.IsSuccessStatusCode;
     }
 
+    // intoarce null la succes sau mesajul de eroare de la server
+    public async Task<string?> SubmitReviewAsync(int orderId, int rating, string? comment)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, "api/review")
+        {
+            Content = JsonContent.Create(new { OrderId = orderId, Rating = rating, Comment = comment })
+        };
+        await AddAuthHeaderAsync(request);
+
+        var response = await _http.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+        var error = await response.Content.ReadAsStringAsync();
+        return string.IsNullOrWhiteSpace(error) ? "Recenzia nu a putut fi trimisă." : error;
+    }
+
     private async Task AddAuthHeaderAsync(HttpRequestMessage request)
     {
         if (string.IsNullOrEmpty(_authService.Token))

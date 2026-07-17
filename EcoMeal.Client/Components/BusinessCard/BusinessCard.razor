@@ -30,7 +30,13 @@
     </div>
 
     <div class="card-body d-flex flex-column p-3">
-        <h5 class="card-title fw-bold fs-6 mb-1">@Business.Name</h5>
+        <h5 class="card-title fw-bold fs-6 mb-1">
+            @Business.Name
+            @if (Business.Rating is double rating)
+            {
+                <span class="ms-1 small fw-normal"><span class="text-warning">★</span> @rating.ToString("0.0") <span class="text-muted">(@Business.ReviewCount)</span></span>
+            }
+        </h5>
 
         <p class="card-text text-secondary small mb-1">
             @Business.Address &middot; @Business.Contact

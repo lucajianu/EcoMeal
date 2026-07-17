@@ -10,5 +10,8 @@ public class BusinessDetailsDTO
     public int BusinessTypeId { get; set; }
     public required string BusinessTypeName { get; set; }
     public string? ImageUrl { get; set; }
+    public double? Rating { get; set; }
+    public int ReviewCount { get; set; }
     public List<PackageDTO> Packages { get; set; } = new();
+    public List<ReviewDTO> Reviews { get; set; } = new();
 }

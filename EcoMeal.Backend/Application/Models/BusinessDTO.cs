@@ -8,4 +8,6 @@ public class BusinessDTO
     public required string Contact {get;set;}
     public  required string BusinessTypeName{get;set;}
     public string? ImageUrl{get;set;}
+    public double? Rating{get;set;}
+    public int ReviewCount{get;set;}
 }

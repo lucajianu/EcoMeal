@@ -14,4 +14,5 @@ public class OrderGetDTO
     public string BusinessName{get;set;}="";
     public string UserName{get;set;}="";
     public string UserContact{get;set;}="";
+    public int? ReviewRating{get;set;}
 }

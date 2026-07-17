@@ -11,6 +11,10 @@ public partial class Orders : IDisposable
         [Inject]
         public required OrderNotificationService OrderNotifications{get;set;}
         private List<OrderGetModel>? MyOrders;
+        private int? ReviewingOrderId;
+        private int DraftRating;
+        private string DraftComment = "";
+        private string? ReviewError;
 
         protected override void OnInitialized()
         {
@@ -56,6 +60,28 @@ public partial class Orders : IDisposable
             await ReloadOrdersAsync();
         }
     }
+
+    private void StartReview(int orderId)
+    {
+        ReviewingOrderId = orderId;
+        DraftRating = 5;
+        DraftComment = "";
+        ReviewError = null;
+    }
+
+    private async Task SubmitReview(int orderId)
+    {
+        var comment = string.IsNullOrWhiteSpace(DraftComment) ? null : DraftComment.Trim();
+        ReviewError = await OrderService.SubmitReviewAsync(orderId, DraftRating, comment);
+        if (ReviewError is null)
+        {
+            ReviewingOrderId = null;
+            await ReloadOrdersAsync();
+        }
+    }
+
+    private static string Stars(int rating)
+        => new string('★', rating) + new string('☆', 5 - rating);
 
     public void Dispose()
     {

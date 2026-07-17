@@ -35,6 +35,49 @@
                                     }
                                 </div>
                             </div>
+
+                            @if (order.Status == "Finished")
+                            {
+                                @if (order.ReviewRating is int given)
+                                {
+                                    <div class="mt-2 pt-2 border-top small">
+                                        <span class="text-warning">@Stars(given)</span>
+                                        <span class="text-muted ms-1">recenzia ta</span>
+                                    </div>
+                                }
+                                else if (ReviewingOrderId == order.Id)
+                                {
+                                    <div class="mt-2 pt-2 border-top">
+                                        <div class="mb-2">
+                                            @for (int star = 1; star <= 5; star++)
+                                            {
+                                                var value = star;
+                                                <button type="button" class="btn btn-link p-0 me-1 text-decoration-none fs-4 @(value <= DraftRating ? "text-warning" : "text-secondary")"
+                                                        @onclick="() => DraftRating = value">
+                                                    @(value <= DraftRating ? "★" : "☆")
+                                                </button>
+                                            }
+                                        </div>
+                                        <textarea class="form-control form-control-sm mb-2" rows="2" maxlength="500"
+                                                  placeholder="Spune-ne cum a fost (opțional)"
+                                                  @bind="DraftComment"></textarea>
+                                        @if (ReviewError is not null)
+                                        {
+                                            <div class="text-danger small mb-2">@ReviewError</div>
+                                        }
+                                        <button class="btn btn-sm btn-success me-1" @onclick="() => SubmitReview(order.Id)">Trimite recenzia</button>
+                                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => ReviewingOrderId = null">Renunță</button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="mt-2 pt-2 border-top">
+                                        <button class="btn btn-sm btn-outline-success" @onclick="() => StartReview(order.Id)">
+                                            ★ Lasă o recenzie
+                                        </button>
+                                    </div>
+                                }
+                            }
                         </div>
                     </div>
                 </div>

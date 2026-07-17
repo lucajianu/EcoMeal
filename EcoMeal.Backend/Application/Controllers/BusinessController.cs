@@ -32,7 +32,13 @@ public class BusinessController: ControllerBase
             Description=b.Description,
             Contact=b.Contact,
             ImageUrl=b.ImagePath,
-            BusinessTypeName=b.BusinessType.Name
+            BusinessTypeName=b.BusinessType.Name,
+            // media se calculeaza mereu din recenzii, nu e stocata (nu poate ramane desincronizata)
+            Rating=b.Packages.SelectMany(p=>p.Orders)
+                .Where(o=>o.Review!=null)
+                .Select(o=>(double?)o.Review!.Rating)
+                .Average(),
+            ReviewCount=b.Packages.SelectMany(p=>p.Orders).Count(o=>o.Review!=null)
         } ).ToListAsync();
         foreach (var dto in businessesDTOs)
         {
@@ -55,6 +61,23 @@ public class BusinessController: ControllerBase
                 BusinessTypeId = b.BusinessTypeId,
                 BusinessTypeName = b.BusinessType.Name,
                 ImageUrl = b.ImagePath,
+                Rating = b.Packages.SelectMany(p => p.Orders)
+                    .Where(o => o.Review != null)
+                    .Select(o => (double?)o.Review!.Rating)
+                    .Average(),
+                ReviewCount = b.Packages.SelectMany(p => p.Orders).Count(o => o.Review != null),
+                Reviews = b.Packages.SelectMany(p => p.Orders)
+                    .Where(o => o.Review != null)
+                    .OrderByDescending(o => o.Review!.Date)
+                    .Take(20)
+                    .Select(o => new ReviewDTO
+                    {
+                        Rating = o.Review!.Rating,
+                        Comment = o.Review.Comment,
+                        Date = o.Review.Date,
+                        UserName = o.User!.Name ?? "",
+                        PackageName = o.Package!.Name
+                    }).ToList(),
                 Packages = b.Packages.Select(p => new PackageDTO
                 {
                     Id = p.Id,

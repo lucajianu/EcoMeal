@@ -12,6 +12,7 @@ public class EcoMealDbContext: IdentityDbContext<User,IdentityRole<int>,int>// b
        public DbSet<Business> Businesses{get;set;}
        public DbSet<Package> Packages{get;set;}
        public DbSet<Order> Orders{get;set;}
+       public DbSet<Review> Reviews{get;set;}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -47,6 +48,20 @@ public class EcoMealDbContext: IdentityDbContext<User,IdentityRole<int>,int>// b
         .HasOne(p=>p.Business)
         .WithMany(p=>p.Packages)
         .HasForeignKey(p=>p.BusinessId);
+
+        // o singura recenzie per comanda (relatie 1-la-1, FK unic)
+        modelBuilder.Entity<Review>()
+        .HasOne(r=>r.Order)
+        .WithOne(o=>o.Review)
+        .HasForeignKey<Review>(r=>r.OrderId);
+
+        modelBuilder.Entity<Review>()
+        .HasIndex(r=>r.OrderId)
+        .IsUnique();
+
+        modelBuilder.Entity<Review>()
+        .Property(r=>r.Comment)
+        .HasMaxLength(500);
          
 
 

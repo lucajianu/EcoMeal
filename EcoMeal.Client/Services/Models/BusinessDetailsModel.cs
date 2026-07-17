@@ -10,5 +10,8 @@ public class BusinessDetailsModel
     public int BusinessTypeId{get;set;}
     public string BusinessTypeName{get;set;}="";
     public string? ImageUrl{get;set;}
+    public double? Rating{get;set;}
+    public int ReviewCount{get;set;}
     public List<PackageGetModel> Packages{get;set;}=new();
+    public List<ReviewModel> Reviews{get;set;}=new();
 }

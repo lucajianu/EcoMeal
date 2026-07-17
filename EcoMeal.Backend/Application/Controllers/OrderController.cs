@@ -129,7 +129,8 @@ public class OrderController : ControllerBase
             PackageId=o.PackageId,
             BusinessId=o.Package.BusinessId,
             BusinessName=o.Package.Business.Name,
-            PackageName=o.Package.Name
+            PackageName=o.Package.Name,
+            ReviewRating=o.Review!=null ? o.Review.Rating : null
         }).ToListAsync() ;
 
         return Ok(orders);
